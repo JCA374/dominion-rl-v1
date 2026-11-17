@@ -1,0 +1,16 @@
+{
+ "t": "2026-11-17 22:59:21",
+ "label": "r2 iteration 375",
+ "note": "",
+ "policy": "runs/r2/net_375.npy",
+ "n": 1000,
+ "score": 0.7175,
+ "ci": [
+  0.6888,
+  0.7445
+ ],
+ "big_money": 0.92,
+ "smithy_bm": 0.8175,
+ "witch_bm": 0.7125,
+ "secs": 1
+}
