@@ -1,0 +1,4 @@
+["r2 goal checks vs the GA base: 68.0% (iteration 50) → 70.0% (150) → 71.3% (175) → 70.6% (200); bots 80.1%; head to head ~54.5-55.4%",
+ "Released model chosen in advance: r2 iteration 200 (models/rl_r2_200)",
+ "Confirmation on 4,000 never-used games: 55.0% head to head vs az-v1's best (52.8-57.1%); 70.3% vs the GA base where az-v1's best scores 69.0% on the same games",
+ "3 ms per game vs 460 ms for az-v1's search; ~1.2 million practice games in about three hours"]
