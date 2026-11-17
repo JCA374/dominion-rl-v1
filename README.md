@@ -28,3 +28,17 @@ python3 -m venv .venv && .venv/bin/pip install torch --index-url https://downloa
 .venv/bin/python experiments/goal_check.py runs/r1/net_25.npy --name r1_iter25 --vs_az
 .venv/bin/python publish.py [--push]                     # rebuild the site (docs/)
 ```
+
+## Results (2026-11-17)
+
+Confirmed on 4,000 games never used anywhere (`experiments/confirm.py`, `results/confirm_*`):
+
+| | rl-v1 `models/rl_r2_200` | az-v1's best (net 357 + 400-sim search) |
+|---|---|---|
+| Head to head, 2,000 games | **55.0%** (52.8–57.1%) | 45.0% |
+| vs GA base, the same 2,000 new games | **70.3%** (68.2–72.2%) | 69.0% |
+| vs the three bots (az-v1's goal games) | **80.1%** | 75.6% |
+| time per game | 3 ms | 460 ms |
+
+How it got there: imitation of the GA genome (52% vs the GA), PPO against a league of the GA genome, bots, past selves
+and itself (run r1: 68%, tie with az-v1's best), then az-v1's agent added to the league (run r2). Details on the site.

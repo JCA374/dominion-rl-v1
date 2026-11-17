@@ -10,7 +10,14 @@
 <main>
 <h1>Lessons</h1>
 <p class="lede">What this project and earlier ones taught. Newest first.</p>
-<div class="box"><h3>From this project</h3><ul id="new"><li><b>You can only beat what you practise against.</b> r1's league (GA genome, bots, past selves, itself) took the
+<div class="box"><h3>From this project</h3><ul id="new">
+  <li><b>Confirm once, on games never used, with the rival on the same games.</b> The goal checks along r2 were
+    selected by looking at them; the released net (r2 iteration 200) was then played once on 4,000 new games: 55.0%
+    head to head against az-v1's best, and 70.3% vs the GA base where az-v1's best scored 69.0% on the very same games.
+    Same games for both turns a 1-point difference from noise into a paired comparison.</li>
+  <li><b>A different method can beat a long-tuned one quickly.</b> az-v1 needed a day of training and twenty variants to
+    reach 70% and could not go further. Imitation + PPO + a league passed it in about three hours of training on the
+    same laptop, because it changed what az-v1 could not (the action play) and learned from ten times more games.</li><li><b>You can only beat what you practise against.</b> r1's league (GA genome, bots, past selves, itself) took the
     network to a tie with az-v1's best (49.2%, 49.4% head to head at iterations 100 and 200) and then nothing moved. Adding
     az-v1's agent to the league (15% its network without search, 5% with search) gave 54.3% and 55.4% head to head within
     100 iterations. The score against the GA genome stayed at ~68%: beating one opponent is not the same as getting

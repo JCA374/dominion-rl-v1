@@ -1,0 +1,17 @@
+{
+ "t": "2026-11-17 21:53:29",
+ "label": "rl-v1 r2 net 200, confirmation (2,000 new games each)",
+ "note": "games never used anywhere; head to head vs az-v1's best: 2,000 games",
+ "policy": "models/rl_r2_200.npy",
+ "n": 2000,
+ "score": 0.7025,
+ "ci": [
+  0.6821,
+  0.7221
+ ],
+ "vs_az": 0.5495,
+ "vs_az_ci": [
+  0.5276,
+  0.5712
+ ]
+}

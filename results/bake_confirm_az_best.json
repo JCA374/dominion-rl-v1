@@ -1,0 +1,12 @@
+{
+ "t": "2026-11-17 22:02:48",
+ "label": "az-v1 best agent, confirmation (same 2,000 GA games)",
+ "note": "the same new games against the GA base",
+ "policy": "az",
+ "n": 2000,
+ "score": 0.69,
+ "ci": [
+  0.6694,
+  0.7099
+ ]
+}

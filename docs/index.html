@@ -15,7 +15,10 @@ decision (what to buy, which action to play, what to trash, gain or discard), fi
 then improving by <b>reinforcement learning</b> (PPO, a policy-gradient method) against a league of opponents. No tree
 search at play time: one forward pass per decision. <b>The goal:</b> beat az-v1's best agent, which scores 70% against
 the GA base genome with 400 simulated futures per buy: above 70% on the same 1,000 games, and above 50% head to head
-against it.</p>
+against it. <b>Reached on day 1:</b> confirmed on 4,000 games never used anywhere, the released network
+(<code>models/rl_r2_200</code>) beats az-v1's best agent head to head 55.0% (52.8–57.1%, 2,000 games) and scores 70.3%
+against the GA base where az-v1's best scores 69.0% on the same games; against the three bots 80% vs 76%. It plays a
+game in 3 ms; az-v1's agent needs 460 ms.</p>
   <p class="countdown" id="countdown"></p>
 </header>
 
