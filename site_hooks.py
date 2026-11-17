@@ -199,7 +199,7 @@ def model_viz(out_dir):
     net = load(pt)
     sd = net.state_dict()
     fig_arch([("input: what it knows at a decision", core.NF), ("dense ReLU", net.nh), ("dense ReLU", net.nh),
-                  ("34 logits  |  value", core.NA)], paths["arch"], title=f"Net {it}")
+                  ("34 logits + 1 win estimate", core.NA + 1)], paths["arch"], title=f"Net {it}")
     fig_weight_hist([("W1", sd["l1.weight"].numpy()), ("W2", sd["l2.weight"].numpy()),
                          ("policy", sd["pi.weight"].numpy()), ("value", sd["v.weight"].numpy())], paths["weights"])
     # positions: the GA base genome's decisions (recorded) in the Play games and more
