@@ -1,0 +1,5 @@
+["Third method: one network answers every decision (buys, actions, trashing, discards); no search, no hand-written rules",
+ "Step 1, behaviour cloning: 1.08 million GA-genome decisions; 98% agreement after 6 epochs",
+ "Step 2, PPO against a league: 40% GA genome, 15% bots, 15% past selves, 30% itself; 3,000 games per ~10 s iteration",
+ "Goal checks vs the GA base (1,000 fresh games): 52% (imitation) → 59.6% (iteration 25) → 63.6% (50) → 65.3% (75); az-v1's best: 69.7%",
+ "Warning sign: against the three bots it slipped from 74.8% to 70.3%"]
