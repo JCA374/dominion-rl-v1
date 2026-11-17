@@ -1,0 +1,4 @@
+["r1 plateaued at ~68% vs the GA base and ~49% head to head vs az-v1's best (iterations 100-200)",
+ "r2 league adds az-v1's net without search (15%) and its full 400-simulation search (5%)",
+ "Head to head vs az-v1's best (1,000 fresh games): 54.3% at r2 iteration 50, 55.4% at 100 (52.3-58.5%)",
+ "Against the GA base still 68.0-68.6%, vs az-v1's best 69.7% on the same games: not yet clearly better"]

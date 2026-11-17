@@ -17,7 +17,7 @@ import numpy as np
 from rl import core
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-RUN = "r1"
+RUN = "r2"
 EVERY = 25                     # the Play tab's newest net moves every EVERY iterations (clips are committed)
 N = core.NUM_CARDS
 NAME = core.NAME

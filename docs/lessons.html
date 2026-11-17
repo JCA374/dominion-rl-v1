@@ -10,7 +10,17 @@
 <main>
 <h1>Lessons</h1>
 <p class="lede">What this project and earlier ones taught. Newest first.</p>
-<div class="box"><h3>From this project</h3><ul id="new"><li class="muted">Training has just started; lessons follow the measurements.</li></ul></div>
+<div class="box"><h3>From this project</h3><ul id="new"><li><b>You can only beat what you practise against.</b> r1's league (GA genome, bots, past selves, itself) took the
+    network to a tie with az-v1's best (49.2%, 49.4% head to head at iterations 100 and 200) and then nothing moved. Adding
+    az-v1's agent to the league (15% its network without search, 5% with search) gave 54.3% and 55.4% head to head within
+    100 iterations. The score against the GA genome stayed at ~68%: beating one opponent is not the same as getting
+    better in general.</li>
+  <li><b>Speed is a feature.</b> The network plays a game in 3 ms inside the C engine; az-v1's search needs 460 ms. That
+    is why this method got through ~0.9 million practice games in its first two hours, and why imitation + PPO overtook
+    a search that took a day to train.</li>
+  <li><b>Imitation is a strong start, not a ceiling.</b> The network copied the GA genome's choices 98.5% of the time
+    and scored ~52% against it; PPO added 15 points in 100 iterations (25 minutes). Starting RL from a random network
+    would have spent hours relearning what the genome already knew.</li></ul></div>
 <div class="box"><h3>From az-v1 (that shaped this project)</h3><ul>
   <li><b>Keep one number on data the model never trained on.</b> az-v1's value head looked better and better in
     training (error 0.19) while it got worse on fresh games (1.17, worse than guessing 50/50). Here the win estimate is

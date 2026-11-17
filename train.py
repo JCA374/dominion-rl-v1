@@ -30,6 +30,8 @@ CFG = {
     "vs_ga": 0.4,            # league shares: the GA base genome
     "vs_bots": 0.15,         #   the three bots
     "vs_past": 0.15,         #   past snapshots (the rest: the current net, both seats learning)
+    "vs_aznet": 0.0,         #   az-v1's best net without search (GA genome actions, net buys; fast)
+    "vs_azsearch": 0.0,      #   az-v1's best agent with search (400 simulations; ~0.5 s a game)
     "snapshot_every": 10,
     "snapshots": 8,
     "temp": 1.0,
@@ -49,6 +51,7 @@ CFG = {
     "chunk": 50,
 }
 BOTS = ["Big Money", "Smithy-BM", "Witch-BM"]
+AZ_NET = "opponents/az_r2_357.npy"
 
 
 def chunks(games, n):
@@ -289,6 +292,10 @@ def main():
                 opp, k = {"kind": "bot", "name": b, "tag": b}, kingdom_for_bot(rng, b)
             elif u < cfg["vs_ga"] + cfg["vs_bots"] + cfg["vs_past"] and len(snaps) > 1:
                 opp, k = {"kind": "net", "path": rng.choice(snaps[:-1]), "tag": "past"}, random_kingdom(rng)
+            elif (u2 := u - cfg["vs_ga"] - cfg["vs_bots"] - cfg["vs_past"]) >= 0 and u2 < cfg["vs_aznet"]:
+                opp, k = {"kind": "az", "path": AZ_NET, "sims": 0, "tag": "AZ net"}, random_kingdom(rng)
+            elif u2 >= 0 and u2 < cfg["vs_aznet"] + cfg["vs_azsearch"]:
+                opp, k = {"kind": "az", "path": AZ_NET, "sims": 400, "tag": "AZ search"}, random_kingdom(rng)
             else:
                 opp, k = {"kind": "net", "path": learner, "tag": "self"}, random_kingdom(rng)
             games.append({"kingdom": k, "seed": rng.getrandbits(32), "seat": seat, "opp": opp})
@@ -301,6 +308,8 @@ def main():
         sp = {"selfplay_vs_ga": float(np.mean([r["points"] for r in res if r["opp"] == "GA base"])),
               "selfplay_vs_bots": float(np.mean([r["points"] for r in res if r["opp"] in BOTS])),
               "selfplay_vs_past": float(np.mean([r["points"] for r in res if r["opp"] == "past"] or [float("nan")])),
+              "selfplay_vs_aznet": float(np.mean([r["points"] for r in res if r["opp"] == "AZ net"] or [float("nan")])),
+              "selfplay_vs_azsearch": float(np.mean([r["points"] for r in res if r["opp"] == "AZ search"] or [float("nan")])),
               "decisions": int(len(data["A"])),
               "value_mse_fresh": float(((data["V"] - data["Z"]) ** 2).mean()),
               "t_play": t_play}
@@ -344,7 +353,7 @@ def make_row(it, t0, m, sp, e):
         row[f"eval_{tag.replace(' ', '_').replace('-', '_')}"] = round(e[tag], 4)
     row["eval_turns"] = round(e["turns"], 2)
     row["eval_capped"] = round(e["capped"], 4)
-    for k in ("selfplay_vs_ga", "selfplay_vs_bots", "selfplay_vs_past", "decisions", "value_mse_fresh",
+    for k in ("selfplay_vs_ga", "selfplay_vs_bots", "selfplay_vs_past", "selfplay_vs_aznet", "selfplay_vs_azsearch", "decisions", "value_mse_fresh",
               "t_play", "t_train", "t_iter"):
         row[k] = (round(sp[k], 4) if isinstance(sp[k], float) and not math.isnan(sp[k]) else sp[k]) if k in sp else ""
     return row
