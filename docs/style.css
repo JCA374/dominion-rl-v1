@@ -114,10 +114,12 @@ pre { background: var(--code); padding: 10px 12px; border-radius: 8px; overflow-
 .tlbar { position: relative; height: 14px; background: var(--code); border-radius: 7px; }
 .tlseg { position: absolute; top: 0; height: 14px; border-radius: 7px; background: var(--accent); }
 .tlseg.passed { background: var(--good); } .tlseg.capped { background: var(--warn); } .tlseg.running { background: var(--accent); opacity: .85; }
-.figs { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.figs { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 900px; }
 .fig { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
-.fig img { width: 100%; border-radius: 8px; display: block; }
-.fig figcaption { font-size: .85rem; color: var(--muted); padding: 6px 4px 2px; }
+.fig img { width: 100%; border-radius: 8px; display: block; background: #fff; }
+.fig a { display: block; cursor: zoom-in; }
+.fig figcaption { font-size: .95rem; color: var(--muted); padding: 8px 4px 2px; line-height: 1.45; }
+.fig figcaption b { color: var(--ink, inherit); display: block; font-size: 1.05rem; margin-bottom: 2px; }
 .glossary { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; }
 .glossary dt { font-weight: 600; } .glossary dd { margin: 0; }
 @media (max-width: 600px) {

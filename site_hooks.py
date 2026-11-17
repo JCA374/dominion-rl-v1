@@ -98,6 +98,76 @@ def render_play(policy_path, game, out_mp4):
 
 # ── The model tab ───────────────────────────────────────────────────────────────────────────
 
+def cached(out_png, source_path):
+    """True when out_png is newer than the model file it is drawn from (so the figure need not be redrawn)."""
+    return os.path.exists(out_png) and os.path.exists(source_path) and os.path.getmtime(out_png) >= os.path.getmtime(source_path)
+
+
+def _plt():
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    plt.rcParams.update({'font.size': 12, 'axes.titlesize': 13, 'axes.labelsize': 12, 'xtick.labelsize': 11,
+                         'ytick.labelsize': 11, 'axes.spines.top': False, 'axes.spines.right': False})
+    return plt
+
+
+# Figures are shown one per row, up to ~900 px wide: draw them 9 inches wide at 120 dpi (1080 px), fonts >= 11 pt.
+def fig_arch(layers, out_png, title='Architecture'):
+    """layers: [("input", 8), ("dense tanh", 64), ("dense tanh", 64), ("action logits", 4)] -> a box diagram with sizes."""
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(9, 1.0 + 0.9 * len(layers)))
+    ax.axis('off')
+    for i, (name, n) in enumerate(layers):
+        y = len(layers) - 1 - i
+        w = 2.2 + 5 * (n / max(m for _, m in layers)) ** 0.5
+        ax.add_patch(plt.Rectangle((5 - w / 2, y - 0.32), w, 0.64, fc='#dbe4ff', ec='#3b5bdb', lw=1.5))
+        ax.text(5, y, f'{name}  ·  {n:,}', ha='center', va='center', fontsize=13)
+        if i:
+            ax.annotate('', (5, y + 0.34), (5, y + 0.66), arrowprops=dict(arrowstyle='->', color='#6b6b70', lw=1.5))
+    ax.set_xlim(0, 10); ax.set_ylim(-0.6, len(layers) - 0.4)
+    ax.set_title(title, fontsize=14)
+    fig.tight_layout(); fig.savefig(out_png, dpi=120); plt.close(fig)
+
+
+def fig_weight_hist(named_arrays, out_png, title='Weights per layer'):
+    """named_arrays: [("layer 1", ndarray), ...] -> one histogram per layer, two per row."""
+    plt = _plt()
+    import numpy as np
+    n = len(named_arrays)
+    cols = 2
+    rows = (n + 1) // 2
+    fig, axes = plt.subplots(rows, cols, figsize=(9, 3.0 * rows))
+    axes = np.atleast_1d(axes).ravel()
+    for ax, (name, a) in zip(axes, named_arrays):
+        a = np.asarray(a).ravel()
+        lim = float(np.percentile(np.abs(a), 99.5)) or 1
+        ax.hist(np.clip(a, -lim, lim), bins=50, color='#3b5bdb')
+        ax.set_title(f'{name}: {a.size:,} weights, std {a.std():.3f}')
+        ax.set_yticks([])
+    for ax in axes[n:]:
+        ax.axis('off')
+    fig.suptitle(title, fontsize=14); fig.tight_layout(); fig.savefig(out_png, dpi=120); plt.close(fig)
+
+
+def fig_bars(labels, values, out_png, title='', ylabel='', colors=None, fmt='{:.2f}'):
+    """Horizontal bars, first label on top, value written at the end of each bar: e.g. action probabilities in a fixed
+    situation, or input sensitivity (how much the output moves when each input is nudged by one standard deviation).
+    ylabel names the value axis."""
+    plt = _plt()
+    n = len(labels)
+    fig, ax = plt.subplots(figsize=(9, 1.2 + 0.36 * n))
+    ys = list(range(n))[::-1]
+    ax.barh(ys, values, color=colors or '#3b5bdb', height=0.7)
+    ax.set_yticks(ys); ax.set_yticklabels(labels)
+    top = max(values) if len(values) else 1
+    for y, v in zip(ys, values):
+        ax.text(v + top * 0.01, y, fmt.format(v), va='center', fontsize=10, color='#444')
+    ax.set_xlim(0, top * 1.12 if top > 0 else 1)
+    ax.set_xlabel(ylabel); ax.set_title(title)
+    fig.tight_layout(); fig.savefig(out_png, dpi=120); plt.close(fig)
+
+
 KIND_SHOW = ["buy", "play action", "Militia discard", "Workshop gain", "Chapel trash", "Remodel gain"]
 
 
@@ -124,13 +194,13 @@ def model_viz(out_dir):
                                                 "most influential of the 298 inputs.")]
     paths = {k: os.path.join(out_dir, f"{k}.png") for k, _, _ in figs}
     entries = [{"src": f"model/{k}.png", "title": t, "caption": c} for k, t, c in figs]
-    if all(AZH.cached(paths[k], src) for k in paths):
+    if all(cached(paths[k], src) for k in paths):
         return entries
     net = load(pt)
     sd = net.state_dict()
-    AZH.fig_arch([("input: what it knows at a decision", core.NF), ("dense ReLU", net.nh), ("dense ReLU", net.nh),
+    fig_arch([("input: what it knows at a decision", core.NF), ("dense ReLU", net.nh), ("dense ReLU", net.nh),
                   ("34 logits  |  value", core.NA)], paths["arch"], title=f"Net {it}")
-    AZH.fig_weight_hist([("W1", sd["l1.weight"].numpy()), ("W2", sd["l2.weight"].numpy()),
+    fig_weight_hist([("W1", sd["l1.weight"].numpy()), ("W2", sd["l2.weight"].numpy()),
                          ("policy", sd["pi.weight"].numpy()), ("value", sd["v.weight"].numpy())], paths["weights"])
     # positions: the GA base genome's decisions (recorded) in the Play games and more
     import random
@@ -155,7 +225,7 @@ def model_viz(out_dir):
         if m.sum() >= 20:
             names.append(f"{kname} ({m.sum()})")
             vals.append(float((pick[m] == A[m]).mean()))
-    AZH.fig_bars(names, vals, paths["agreement"], title="Top choice = the GA genome's choice", ylabel="share")
+    fig_bars(names, vals, paths["agreement"], title="Top choice = the GA genome's choice, per kind of decision", ylabel="share of decisions (number of decisions in brackets)", fmt="{:.0%}")
     std = X.std(0)
     eff = np.zeros(core.NF)
     with torch.no_grad():
@@ -168,8 +238,8 @@ def model_viz(out_dir):
             eff[j] = 0.5 * np.abs(torch.softmax(lg2, -1).numpy() - prob).sum(1).mean()
     fn = feature_names()
     top = np.argsort(-eff)[:25]
-    AZH.fig_bars([fn[j] for j in top], [eff[j] for j in top], paths["sensitivity"],
-                 title="Change in its choices per +1 std of one input", ylabel="total variation")
+    fig_bars([fn[j] for j in top], [eff[j] for j in top], paths["sensitivity"],
+                 title="How much its choices move when one input rises by 1 std", ylabel="total variation (0 = no change, 1 = a different choice)", fmt="{:.3f}")
     return entries
 
 
