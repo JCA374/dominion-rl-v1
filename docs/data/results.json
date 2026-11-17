@@ -1,0 +1,1 @@
+{"baseline_az_best":{"t":"2026-11-17 19:35:56","label":"az-v1 best agent (r2 net 357 + search 400)","note":"","policy":"az","n":1000,"score":0.6965,"ci":[0.6673,0.7242],"big_money":0.8475,"smithy_bm":0.7675,"witch_bm":0.655,"secs":203}}

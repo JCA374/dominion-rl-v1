@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview</title>
+<link rel="stylesheet" href="style.css?v=087dc4db">
+</head>
+<body>
+<main>
+<header class="hero">
+  <h1>One network that plays all of Dominion, learned by trial and error instead of search</h1>
+  <p class="lede">The third method for the Dominion project. A single neural network makes <b>every</b>
+decision (what to buy, which action to play, what to trash, gain or discard), first by imitating the evolved GA genome,
+then improving by <b>reinforcement learning</b> (PPO, a policy-gradient method) against a league of opponents. No tree
+search at play time: one forward pass per decision. <b>The goal:</b> beat az-v1's best agent, which scores 70% against
+the GA base genome with 400 simulated futures per buy: above 70% on the same 1,000 games, and above 50% head to head
+against it.</p>
+  <p class="countdown" id="countdown"></p>
+</header>
+
+<section>
+  <h2>Status now</h2>
+  <div class="cards" id="cards"></div>
+  <p class="muted small">Numbers come from the run files and update every 15 minutes. Details on the <a href="training.html">Training</a> tab.</p>
+</section>
+
+<section>
+  <h2>What this is</h2>
+<p>Dominion is a deck-building card game: every turn you play
+action cards from your hand, then buy one card for your deck. There are about 20 kinds of decision: which action to
+play, what to buy, what Chapel trashes, what Workshop gains, what to discard when the opponent plays Militia, what
+Sentry does with the top cards… A game has about 40 real decisions per player (decisions with only one legal answer
+are not asked).</p>
+<p><b>What came before.</b> <a href="https://github.com/JCA374/dominion-v1">dominion-v1</a> evolved priority lists with a
+genetic algorithm (the "GA genome"): a fixed rule per kind of decision. <a href="https://jca374.github.io/dominion-az-v1/">az-v1</a>
+kept the genome's action play and replaced its buys with an AlphaZero-style search: 400 imagined futures per buy,
+guided by a network. That reached 70% against the GA genome and stopped there: 20 variants all landed between 66% and
+70%.</p>
+<p><b>What is different here.</b> No search and no hand-written rule anywhere: the network answers every decision,
+including the action play that the other two methods never changed. It learns from the results of whole games
+(+1 win, −1 loss), the way a person improves by playing a lot: about a thousand games a second on this laptop.</p>
+<p><b>The measure.</b> az-v1's goal games exactly: 1,000 games against the GA base genome on 500 kingdoms never used in
+training, both seats (az-v1's best: 69.7% here). Then 1,000 head-to-head games against az-v1's best agent itself, on
+500 other kingdoms. "Better" means both: above 70%, and above 50% head to head, with the 95% interval (±3 points) clear
+of the line.</p>
+</section>
+
+<section>
+  <h2>Approach</h2>
+<p><b>1. Imitation.</b> 20,000 games of the GA genome
+(against itself and the bots): 1.08 million decisions. The network learns to predict the genome's choice in each (and
+the winner), so it starts as a copy of the genome. <b>2. Reinforcement learning (PPO).</b> Each iteration plays 3,000
+games in which the network <i>samples</i> its decisions from its own probabilities, so it tries things. Every decision
+of a won game is made a little more likely, every decision of a lost one a little less, weighted by how much better
+or worse the game went than the network's own win estimate expected (the "advantage"). PPO limits how far one update
+may move the policy. <b>3. A league of opponents.</b> 40% of the games against the GA genome, 15% against the three
+bots, 15% against its own past snapshots, 30% against itself. <b>4. Checks.</b> After every update: 400 games against
+the GA genome and 300 against the bots with the network playing its top choice; every 25 iterations the goal check.</p>
+<pre class="diagram">
+ GA genome games ──▶ imitation (cross-entropy) ──▶ net 0  ≈ the GA genome
+                                                    │
+        ┌───────────────────────────────────────────┘
+        ▼
+ ┌────────────────────────────────┐   decisions, log-probabilities,
+ │ 3,000 games, the net SAMPLING  │   win estimates, final results
+ │ vs GA 40% · bots 15% ·          │ ─────────────────────────────┐
+ │    past selves 15% · itself 30% │                              ▼
+ └────────────────────────────────┘                 advantages (GAE) ─▶ PPO update
+        ▲                                                              │
+        └──────────────────────────── new net ◀────────────────────────┘
+                 every iteration: 700 evaluation games (argmax)
+                 every 25: goal check (1,000 vs GA + 1,000 vs az-v1's best)
+</pre>
+<p><b>Real numbers</b> (8-core laptop CPU, no GPU): the network has 151,331 weights (298 inputs → 256 → 256 → 34
+choices + 1 win estimate) and runs in C inside the game engine: a whole game of network-vs-genome takes 3 ms, against
+0.5 s for az-v1's searching agent. Training is PyTorch on the CPU.</p>
+</section>
+
+<section>
+  <h2>Decisions <span class="muted small">newest first · why things are the way they are</span></h2>
+  <p class="muted small">Logged with <code>python experiments/journal.py --decision "title" "what was chosen and why" "what was rejected"</code>.</p>
+  <div id="decisions"></div>
+</section>
+
+<section>
+  <h2>How to read this site</h2>
+  <div id="guide"></div>
+</section>
+
+<section>
+  <h2>Repo layout</h2>
+<pre class="diagram">
+c/rl.c            the agent in C: 298 features of any decision, the network's forward pass, sampling,
+                  recording, seats for the GA genome / az-v1's agent / this network, the clip trace
+rl/               Python: core.py (ctypes bridge), net.py (PyTorch model + export to C), jobs.py (game jobs, GAE)
+train.py          imitation, then the PPO loop with the league; config CFG at the top; writes runs/&lt;run&gt;/
+experiments/      goal_check.py (az-v1's goal games + head to head vs az-v1's best), journal.py
+opponents/        az_r2_357.npy: az-v1's best network (the agent to beat)
+results/          every measured number (goal_*, baseline_*, bake_*)
+engine/           submodule: the rules (dominion-engine)
+az-v1/            submodule: az-v1 (its agent, and through it dominion-v1's GA genomes and bots)
+tests/            engine pins agree, C and PyTorch nets agree, GA seats replay az-v1's games exactly
+publish.py, site_hooks.py, site.json, docs/, podcast/    this site
+</pre>
+</section>
+</main>
+<footer>Updated automatically every 15 minutes. Numbers are measured on fresh episodes, not estimated.</footer>
+<script src="site.js?v=28dd3445"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=68cb7350"></script>
+<script src="overview.js?v=cb92b7c0"></script>
+</body>
+</html>

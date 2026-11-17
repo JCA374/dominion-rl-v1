@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study</title>
+<link rel="stylesheet" href="style.css?v=087dc4db">
+</head>
+<body>
+<main>
+<h1>Study this project</h1>
+<p class="lede">For someone who wants to learn from this project rather than follow it: what to read in which order, the ideas
+you need, the words we use, how to run it yourself, and a few exercises.</p>
+
+<section>
+  <h2>Reading order</h2>
+<ol id="order">
+    <li><a href="index.html">Overview</a>: the goal, the three methods and how "better" is measured. 5 minutes.</li>
+    <li><a href="inputs.html">How it sees</a>: the 298 inputs and the 34 answers. 5 minutes.</li>
+    <li><a href="model.html">The model</a>: imitation, then PPO with a league, and why this could beat a search. 15 minutes.</li>
+    <li><a href="training.html">Training</a> and the <a href="log.html">Log</a>: did it improve on its starting point (the
+      genome) and where is it against the 70% line? 5 minutes.</li>
+    <li><a href="lessons.html">Lessons</a> and the <a href="podcast/">Podcast</a>. 15 minutes.</li>
+    <li>The code: <code>c/rl.c</code> (features, forward pass, sampling, recording: ~200 lines),
+      <code>rl/jobs.py</code> (<code>gae</code>: the advantage in 12 lines), <code>train.py</code>
+      (<code>ppo_update</code>: the PPO loss), <code>experiments/goal_check.py</code>. 1 hour.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Key concepts</h2>
+<div class="box"><h3>Behaviour cloning</h3><p>Supervised
+learning of an expert's choices: here, the GA genome's. Fast and stable, and it gives RL a strong start instead of a
+random player. <b>Here:</b> step 1 of <code>train.py</code>, the "bc_epoch" lines in the Log. <b>What people get
+wrong:</b> 98% agreement does not mean 98% of the strength: the 2% are often the hard decisions, and a copy can only
+match its teacher, never pass it.</p></div>
+<div class="box"><h3>Policy gradient</h3><p>Change the network so that the choices in games that went well become more
+likely. The "how well" is the advantage. <b>Here:</b> <code>ppo_update</code>. <b>What people get wrong:</b> it does not
+know <i>which</i> of a game's 40 decisions won it; only averaging over many games sorts good decisions from lucky ones,
+which is why it needs millions of games.</p></div>
+<div class="box"><h3>Advantage and GAE</h3><p>The advantage of a decision is how much better things went than the
+network itself expected at that moment. GAE builds it from the network's own win estimates along the game (λ = 0.95).
+<b>Here:</b> <code>gae()</code> in <code>rl/jobs.py</code>. <b>What people get wrong:</b> with a bad win estimate the
+advantages are bad too; the value head matters even though it never makes a decision.</p></div>
+<div class="box"><h3>PPO's clip</h3><p>One update may change the probability of a recorded choice by at most ±20%;
+beyond that the gradient stops. It keeps learning from noisy data from destroying a good policy in one step.
+<b>Where:</b> <code>clip</code>, <code>max_kl</code> in <code>CFG</code>; the "PPO step size" chart on Training.</p></div>
+<div class="box"><h3>Exploration by sampling, evaluation by argmax</h3><p>In training the network draws its choices at
+random from its probabilities; in every measurement it takes its top choice. <b>What people get wrong:</b> comparing the
+training games' win rate (with exploration) with the evaluation (without).</p></div>
+<div class="box"><h3>A league of opponents</h3><p>Opponents from several sources so the policy stays good against all of
+them, not just the latest. <b>Here:</b> 40/15/15/30 GA, bots, past selves, itself. <b>What people get wrong:</b> pure
+self-play can cycle (A beats B beats C beats A) without getting better.</p></div>
+</section>
+
+<section>
+  <h2>Glossary</h2>
+  <p class="muted small">From <code>glossary.md</code> in the repo (one <code>**term** — meaning</code> per line). The podcast narration uses the same list for names that need a pronunciation.</p>
+  <dl class="glossary" id="glossary"></dl>
+</section>
+
+<section>
+  <h2>Reproduce it</h2>
+<p>8-core laptop CPU (i5-8250U), 8 GB RAM, Linux, Python 3.14, gcc:</p>
+<pre>git clone --recursive https://github.com/JCA374/dominion-rl-v1 && cd dominion-rl-v1
+python3 -m venv .venv && .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+.venv/bin/pip install numpy pytest pillow matplotlib
+.venv/bin/python -m pytest -q tests        # builds rl.so; "4 passed"
+.venv/bin/python -u train.py --run mine     # imitation: ~1 min data + ~1 min per epoch; then PPO iterations
+.venv/bin/python experiments/goal_check.py runs/mine/net_25.npy --name mine25 --vs_az   # ~4 min</pre>
+<p>Needs about 3 GB of free memory for the imitation data (1.08 million decisions × 298 inputs).</p>
+</section>
+
+<section>
+  <h2>Exercises</h2>
+<ol>
+  <li><b>Easy: how good is a copy?</b> Run the goal check on <code>net_0.npy</code> (imitation only). It agrees with the
+    genome ~98% of the time; what does it score against the genome itself? Expect a bit under 50%.</li>
+  <li><b>Medium: no league.</b> Set <code>vs_ga=0 vs_bots=0 vs_past=0</code> (pure self-play) and compare the
+    evaluation against the GA after 50 iterations with the default run.</li>
+  <li><b>Medium: exploration.</b> <code>ent=0</code> versus <code>ent=0.03</code>: watch the entropy chart and the
+    score. Too little entropy: it stops trying things; too much: it plays randomly.</li>
+  <li><b>Hard: which decisions does RL change?</b> Compare <code>net_0</code> and a late net on the GA genome's
+    positions per decision kind (The model tab's "agreement" figure does it for the newest net).</li>
+</ol>
+</section>
+</main>
+<script src="site.js?v=28dd3445"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=68cb7350"></script>
+<script src="study.js?v=ca69f153"></script>
+</body>
+</html>

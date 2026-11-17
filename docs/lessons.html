@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lessons</title>
+<link rel="stylesheet" href="style.css?v=087dc4db">
+</head>
+<body>
+<main>
+<h1>Lessons</h1>
+<p class="lede">What this project and earlier ones taught. Newest first.</p>
+<div class="box"><h3>From this project</h3><ul id="new"><li class="muted">Training has just started; lessons follow the measurements.</li></ul></div>
+<div class="box"><h3>From az-v1 (that shaped this project)</h3><ul>
+  <li><b>Keep one number on data the model never trained on.</b> az-v1's value head looked better and better in
+    training (error 0.19) while it got worse on fresh games (1.17, worse than guessing 50/50). Here the win estimate is
+    measured on each iteration's new games before training on them ("value error on fresh games").</li>
+  <li><b>A search is only as good as its judge.</b> az-v1's searches with noisy judgements found bad moves that looked
+    good by luck; with half of its judge being the GA genome playing on, it could not get past ~70%. This project has
+    no judge at play time: it learns from real game results.</li>
+  <li><b>When the student agrees with the teacher on everything, the teaching has stopped.</b> az-v1's net copied its
+    search 98% of the time and the loop went flat for 250 iterations. Policy gradients don't have a teacher to agree
+    with: the games themselves are the signal.</li>
+</ul></div>
+</main>
+<script src="site.js?v=28dd3445"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=68cb7350"></script>
+
+</body>
+</html>
