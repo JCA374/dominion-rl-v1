@@ -27,6 +27,14 @@ game in 3 ms; az-v1's agent needs 460 ms.</p>
   <div class="cards" id="cards"></div>
   <p class="muted small">Numbers come from the run files and update every 15 minutes. Details on the <a href="training.html">Training</a> tab.</p>
 </section>
+<section>
+  <h2>Against the new GA base <span class="muted small">2026-11-21</span></h2>
+  <p class="lede">The GA base got stronger: 17 of its specialists improved with 1,000 more generations, and on each kingdom
+  the eligible specialists now play each other first and the best one plays (instead of the one best against the simple
+  bots). Every model was measured again, against the old and the new base on the same fresh games. Bold rows are this
+  project's models. Other scores on this site (training curves, goal checks) are against the old base.</p>
+  <div id="rescore" data-mine="rl-v1"></div>
+</section>
 
 <section>
   <h2>What this is</h2>
@@ -113,5 +121,6 @@ publish.py, site_hooks.py, site.json, docs/, podcast/    this site
 <script src="common.js?v=958183f8"></script>
 <script src="project.js?v=68cb7350"></script>
 <script src="overview.js?v=cb92b7c0"></script>
+<script src="rescore.js?v=a92e0e84"></script>
 </body>
 </html>
